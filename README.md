@@ -14,3 +14,8 @@
 - 初始化專案: npm init vue@latest
 - npm install
 - npm run dev
+
+## 建立專案
+- npm create vite@latest / npm init vite@latest
+- npm install
+- npm run dev
