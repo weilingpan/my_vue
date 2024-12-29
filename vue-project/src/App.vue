@@ -58,7 +58,7 @@
 </aside>
 
  <!-- Main Content -->
- <main>
+ <main class="ml-64">
    <router-view />
  </main>
 

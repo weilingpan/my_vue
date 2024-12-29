@@ -1,36 +1,34 @@
 <template>
-  <div>
-    <h1>User List</h1>
-    <!-- <h1>loading: {{ loading }}</h1>
-    <h1>error: {{ error }}</h1>
-    <h1>data: {{ data.getUsers }}</h1> -->
+  <div class="p-6">
+    <h1 class="text-3xl font-bold mb-4">User List</h1>
+
     <!-- 如果還在加載，就顯示 Loading... -->
-    <p v-if="loading">Loading...</p>
+    <p v-if="loading" class="text-center text-lg">Loading...</p>
 
     <!-- 數據加載完成後顯示表格 -->
-    <table v-if="!loading && data && data.getUsers" border="1">
-      <thead>
+    <table v-if="!loading && data && data.getUsers" class="min-w-full table-auto border-collapse bg-white shadow-md rounded-lg">
+      <thead class="bg-gray-200">
         <tr>
-          <th>ID</th>
-          <th>Username</th>
-          <th>Posts</th>
-          <th>Signup Time</th>
-          <th>Expired Time</th>
+          <th class="py-2 px-4 text-left border-b text-sm font-medium text-gray-700">ID</th>
+          <th class="py-2 px-4 text-left border-b text-sm font-medium text-gray-700">Username</th>
+          <th class="py-2 px-4 text-left border-b text-sm font-medium text-gray-700">Posts</th>
+          <th class="py-2 px-4 text-left border-b text-sm font-medium text-gray-700">Signup Time</th>
+          <th class="py-2 px-4 text-left border-b text-sm font-medium text-gray-700">Expired Time</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="user in data.getUsers" :key="user.id">
-          <td>{{ user.id }}</td>
-          <td>{{ user.username }}</td>
-          <td>{{ user.posts.length }}</td>
-          <td>{{ formatTime(user.signupTime) }}</td>
-          <td>{{ formatTime(user.expiredTime) }}</td>
+        <tr v-for="user in data.getUsers" :key="user.id" class="hover:bg-gray-50">
+          <td class="py-2 px-4 border-b text-sm text-gray-600">{{ user.id }}</td>
+          <td class="py-2 px-4 border-b text-sm text-gray-600">{{ user.username }}</td>
+          <td class="py-2 px-4 border-b text-sm text-gray-600">{{ user.posts.length }}</td>
+          <td class="py-2 px-4 border-b text-sm text-gray-600">{{ formatTime(user.signupTime) }}</td>
+          <td class="py-2 px-4 border-b text-sm text-gray-600">{{ formatTime(user.expiredTime) }}</td>
         </tr>
       </tbody>
     </table>
 
     <!-- 顯示錯誤 -->
-    <p v-if="error">Error: {{ error.message }}</p>
+    <p v-if="error" class="text-red-500 text-lg mt-4">Error: {{ error.message }}</p>
   </div>
 </template>
 
