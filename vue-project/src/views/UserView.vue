@@ -32,6 +32,7 @@
           <th scope="col" class="p-4">Posts</th>
           <th scope="col" class="p-4">Signup Time</th>
           <th scope="col" class="p-4">Expired Time</th>
+          <th scope="col" class="p-4">Action</th>
         </tr>
       </thead>
       <tbody>
@@ -42,6 +43,9 @@
           <td class="px-6 py-4">{{ user.posts.length }}</td>
           <td class="px-6 py-4">{{ formatTime(user.signupTime) }}</td>
           <td class="px-6 py-4">{{ formatTime(user.expiredTime) }}</td>
+          <td class="px-6 py-4">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">edit</button>
+          </td>
         </tr>
       </tbody>
     </table>
