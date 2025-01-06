@@ -19,3 +19,8 @@
 - npm create vite@latest / npm init vite@latest
 - npm install
 - npm run dev
+
+## version
+node: v12.22.9
+npm: 9.6.4
+vite: 4.5.5
