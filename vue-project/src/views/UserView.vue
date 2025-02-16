@@ -6,6 +6,13 @@
     <p v-if="loading" class="text-center text-lg">Loading...</p>
 
     <div class="pb-4 bg-white dark:bg-gray-900">
+      <!-- Add User Button -->
+      <button 
+        @click="addUser"
+        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">
+        Add User
+      </button>
+      
       <label for="table-search" class="sr-only">Search</label>
       <div class="relative mt-1">
           <div class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -44,7 +51,16 @@
           <td class="px-6 py-4">{{ formatTime(user.signupTime) }}</td>
           <td class="px-6 py-4">{{ formatTime(user.expiredTime) }}</td>
           <td class="px-6 py-4">
-            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">edit</button>
+            <button @click="updateUser(user.id)" 
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                    Edit
+            </button>
+            <button @click="deleteUser(user.id)" 
+                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full">
+              Delete
+            </button>
+            <!-- <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">edit</button>
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">update</button> -->
           </td>
         </tr>
       </tbody>
@@ -57,7 +73,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, computed } from 'vue';
-import { useQuery } from '@vue/apollo-composable';
+import { useQuery, useMutation } from '@vue/apollo-composable';
 import gql from 'graphql-tag';
 
 export const READ_USER = gql`
@@ -73,6 +89,127 @@ export const READ_USER = gql`
     }
   }
 `;
+ 
+export const CREATE_USER = gql`
+  mutation CreateUser($username: String!, $email: String!) {
+    createUser(username: $username, email: $email) {
+      id
+      username
+      email
+    }
+  }
+  `;
+
+export const DELETE_USER = gql`
+  mutation DeleteUser($id: ID!) {
+    deleteUser(id: $id) {
+      id
+      username
+    }
+  }
+`;
+
+export const UPDATE_USER = gql`
+  mutation UpdateUser($id: ID!, $username: String!) {
+    updateUser(id: $id, username: $username) {
+        id
+        username
+        email
+    }
+  }
+  `;
+
+// [
+//     {
+//         "__typename": "UserType",
+//         "id": 1,
+//         "username": "regina",
+//         "posts": [
+//             {
+//                 "__typename": "PostType",
+//                 "id": 1
+//             }
+//         ],
+//         "signupTime": "2024-12-29T14:49:00.011000",
+//         "expiredTime": "2024-12-30T14:51:06.459192"
+//     },
+//     {
+//         "__typename": "UserType",
+//         "id": 2,
+//         "username": "amy",
+//         "posts": [],
+//         "signupTime": "2024-12-29T15:25:13.126226",
+//         "expiredTime": "2024-12-30T16:05:25.874869"
+//     },
+//     {
+//         "__typename": "UserType",
+//         "id": 3,
+//         "username": "lily",
+//         "posts": [],
+//         "signupTime": "2024-12-29T15:25:13.126226",
+//         "expiredTime": "2025-01-07T15:48:29.737410"
+//     }
+// ]
+
+// export const ALL_FRAGMENT = gql`
+//   fragment UserFields on UserType {
+//     id
+//     username
+//     signupTime
+//     expiredTime
+//   }
+
+//   fragment PostFields on PostType {
+//     id
+//     title
+//     authorId
+//   }
+// `;
+
+// export const READ_USER = gql`
+//   query ReadUser{
+//     user1: getUser(username: "regina") {
+//       ...UserFields
+//       posts {
+//         ...PostFields
+//       }
+//     }
+//     user2: getUser(username: "lily") {
+//       ...UserFields
+//       posts {
+//         ...PostFields
+//       }
+//     }
+//   }
+//   ${ALL_FRAGMENT}
+// `;
+
+// {
+//     "user1": {
+//         "__typename": "UserType",
+//         "posts": [
+//             {
+//                 "__typename": "PostType",
+//                 "id": 1,
+//                 "title": "beginner#1",
+//                 "authorId": 1
+//             }
+//         ],
+//         "id": 1,
+//         "username": "regina",
+//         "signupTime": "2024-12-29T14:49:00.011000",
+//         "expiredTime": "2024-12-30T14:51:06.459192"
+//     },
+//     "user2": {
+//         "__typename": "UserType",
+//         "posts": [],
+//         "id": 3,
+//         "username": "lily",
+//         "signupTime": "2024-12-29T15:25:13.126226",
+//         "expiredTime": "2025-01-07T15:48:29.737410"
+//     }
+// }
+
 
 interface Post {
   id: string;
@@ -94,7 +231,28 @@ export default defineComponent({
   name: 'UserList',
   setup() {
     const { result: data, loading, error } = useQuery<ReadUserData>(READ_USER);
+    const createUserMutation = useMutation(CREATE_USER);
+    const deleteUserMutation = useMutation(DELETE_USER);
+    const updateUserMutation = useMutation(UPDATE_USER);
     const searchQuery = ref('');
+
+    // 添加用戶
+    const addUser = () => {
+      alert("Add User button clicked! (Implement modal or form)");
+    };
+
+    // 刪除用戶
+    const deleteUser = (userId) => {
+      if (confirm("Are you sure you want to delete this user?")) {
+        // 在這裡呼叫 GraphQL mutation 或 API 來刪除用戶
+        alert(`User with ID ${userId} deleted!`);
+      }
+    };
+
+    // 更新用戶
+    const updateUser = (userId) => {
+      alert(`Update User with ID ${userId} (Implement modal or form)`);
+    };
 
     // 檢查資料
     // console.log(loading);
@@ -126,7 +284,12 @@ export default defineComponent({
       loading,
       error,
       formatTime,
+      addUser,
+      deleteUser,
+      updateUser
     };
   },
 });
 </script>
+
+<!-- TODO: user fragment(https://hygraph.com/learn/graphql/fragments) -->
