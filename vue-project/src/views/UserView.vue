@@ -230,7 +230,7 @@ interface ReadUserData {
 export default defineComponent({
   name: 'UserList',
   setup() {
-    const { result: data, loading, error } = useQuery<ReadUserData>(READ_USER);
+    const { result: data, loading, error, refetch } = useQuery<ReadUserData>(READ_USER);
     const createUserMutation = useMutation(CREATE_USER);
     const deleteUserMutation = useMutation(DELETE_USER);
     const updateUserMutation = useMutation(UPDATE_USER);
@@ -242,10 +242,16 @@ export default defineComponent({
     };
 
     // 刪除用戶
-    const deleteUser = (userId) => {
-      if (confirm("Are you sure you want to delete this user?")) {
-        // 在這裡呼叫 GraphQL mutation 或 API 來刪除用戶
-        alert(`User with ID ${userId} deleted!`);
+    const deleteUser = async (userId: string) => {
+      if (confirm(`Are you sure you want to delete user with ID ${userId}?`)) {
+        try {
+          await deleteUserMutation.mutate({ id: userId });
+          await refetch(); // 重新載入用戶列表
+          alert('User deleted successfully!');
+        } catch (err) {
+          console.error('Error deleting user:', err);
+          alert('Failed to delete user.');
+        }
       }
     };
 
