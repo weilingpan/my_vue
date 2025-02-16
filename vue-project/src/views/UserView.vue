@@ -8,11 +8,13 @@
     <div class="pb-4 bg-white dark:bg-gray-900">
       <!-- Add User Button -->
       <button 
-        @click="addUser"
+        @click="showModal = true"
         class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">
         Add User
       </button>
       
+      <Modal :visible="showModal" @update:visible="showModal = $event" @userAdded="refetchUserList"/>
+
       <label for="table-search" class="sr-only">Search</label>
       <div class="relative mt-1">
           <div class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -76,6 +78,8 @@ import { defineComponent, ref, computed } from 'vue';
 import { useQuery, useMutation } from '@vue/apollo-composable';
 import gql from 'graphql-tag';
 
+import Modal from './UserModal.vue';  // 載入 Modal 組件
+
 export const READ_USER = gql`
   query ReadUser {
     getUsers {
@@ -89,16 +93,6 @@ export const READ_USER = gql`
     }
   }
 `;
- 
-export const CREATE_USER = gql`
-  mutation CreateUser($username: String!, $email: String!) {
-    createUser(username: $username, email: $email) {
-      id
-      username
-      email
-    }
-  }
-  `;
 
 export const DELETE_USER = gql`
   mutation DeleteUser($id: ID!) {
@@ -229,16 +223,19 @@ interface ReadUserData {
 
 export default defineComponent({
   name: 'UserList',
+  components: {
+    Modal
+  },
   setup() {
     const { result: data, loading, error, refetch } = useQuery<ReadUserData>(READ_USER);
-    const createUserMutation = useMutation(CREATE_USER);
     const deleteUserMutation = useMutation(DELETE_USER);
     const updateUserMutation = useMutation(UPDATE_USER);
     const searchQuery = ref('');
+    const showModal = ref(false); // 用來控制 modal 的顯示與隱藏
 
-    // 添加用戶
-    const addUser = () => {
-      alert("Add User button clicked! (Implement modal or form)");
+    const refetchUserList = async () => {
+      console.log('refetchUserList ...');
+      await refetch(); // 重新載入用戶列表
     };
 
     // 刪除用戶
@@ -264,13 +261,13 @@ export default defineComponent({
     // console.log(loading);
     // console.log('loading ... ' + loading.value);
     // console.log('error ... ' + error.value)
-    console.log('check data');
-    console.log(data);
-    console.log('data ... ' + data.getUsers);
-    if (data && data.getUsers) {
-      console.log('get data')
-      console.log(data.getUsers); // 這樣可以取出 `getUsers` 陣列
-    }
+    // console.log('check data');
+    // console.log(data);
+    // console.log('data ... ' + data.getUsers);
+    // if (data && data.getUsers) {
+    //   console.log('get data')
+    //   console.log(data.getUsers); // 這樣可以取出 `getUsers` 陣列
+    // }
 
     const formatTime = (time: string | null): string => {
       if (!time) return 'N/A';
@@ -290,9 +287,10 @@ export default defineComponent({
       loading,
       error,
       formatTime,
-      addUser,
       deleteUser,
-      updateUser
+      updateUser,
+      showModal,
+      refetchUserList
     };
   },
 });
