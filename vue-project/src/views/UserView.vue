@@ -8,12 +8,12 @@
     <div class="pb-4 bg-white dark:bg-gray-900">
       <!-- Add User Button -->
       <button 
-        @click="showModal = true"
+        @click="showAddUserModal = true"
         class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">
         Add User
       </button>
       
-      <Modal :visible="showModal" @update:visible="showModal = $event" @userAdded="refetchUserList"/>
+      <Modal :visible="showAddUserModal" @update:visible="showAddUserModal = $event" @userAdded="refetchUserList"/>
 
       <label for="table-search" class="sr-only">Search</label>
       <div class="relative mt-1">
@@ -53,10 +53,15 @@
           <td class="px-6 py-4">{{ formatTime(user.signupTime) }}</td>
           <td class="px-6 py-4">{{ formatTime(user.expiredTime) }}</td>
           <td class="px-6 py-4">
-            <button @click="updateUser(user.id)" 
+            <button @click="updateUser(user)"
                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
                     Edit
             </button>
+            <Modal 
+              :visible="showUpdateUserModal" 
+              :selectedUser=user
+              @update:selectedUser="showUpdateUserModal = $event"
+              @userUpdated="refetchUserList" />
             <button @click="deleteUser(user.id)" 
                     class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full">
               Delete
@@ -90,6 +95,7 @@ export const READ_USER = gql`
       }
       signupTime
       expiredTime
+      email
     }
   }
 `;
@@ -102,16 +108,6 @@ export const DELETE_USER = gql`
     }
   }
 `;
-
-export const UPDATE_USER = gql`
-  mutation UpdateUser($id: ID!, $username: String!) {
-    updateUser(id: $id, username: $username) {
-        id
-        username
-        email
-    }
-  }
-  `;
 
 // [
 //     {
@@ -229,9 +225,9 @@ export default defineComponent({
   setup() {
     const { result: data, loading, error, refetch } = useQuery<ReadUserData>(READ_USER);
     const deleteUserMutation = useMutation(DELETE_USER);
-    const updateUserMutation = useMutation(UPDATE_USER);
     const searchQuery = ref('');
-    const showModal = ref(false); // 用來控制 modal 的顯示與隱藏
+    const showAddUserModal = ref(false); // 用來控制 modal 的顯示與隱藏
+    const showUpdateUserModal = ref(false); // 用來控制 modal 的顯示與隱藏
 
     const refetchUserList = async () => {
       console.log('refetchUserList ...');
@@ -253,8 +249,9 @@ export default defineComponent({
     };
 
     // 更新用戶
-    const updateUser = (userId) => {
-      alert(`Update User with ID ${userId} (Implement modal or form)`);
+    const updateUser = (userObject) => {
+      alert(`Update User with ID ${userObject.id} (Implement modal or form)`);
+      showUpdateUserModal.value = true;
     };
 
     // 檢查資料
@@ -289,7 +286,8 @@ export default defineComponent({
       formatTime,
       deleteUser,
       updateUser,
-      showModal,
+      showAddUserModal,
+      showUpdateUserModal,
       refetchUserList
     };
   },
