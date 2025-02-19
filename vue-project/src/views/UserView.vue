@@ -57,11 +57,11 @@
                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
                     Edit
             </button>
-            <Modal 
+            <!-- <Modal 
               :visible="showUpdateUserModal" 
               :selectedUser=user
               @update:selectedUser="showUpdateUserModal = $event"
-              @userUpdated="refetchUserList" />
+              @userUpdated="refetchUserList" /> -->
             <button @click="deleteUser(user.id)" 
                     class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full">
               Delete
@@ -71,6 +71,11 @@
           </td>
         </tr>
       </tbody>
+      <Modal 
+        :visible="showUpdateUserModal" 
+        :selectedUser="selectedUser"
+        @update:selectedUser="showUpdateUserModal = $event"
+        @userUpdated="refetchUserList" />
     </table>
 
     <!-- 顯示錯誤 -->
@@ -84,6 +89,8 @@ import { useQuery, useMutation } from '@vue/apollo-composable';
 import gql from 'graphql-tag';
 
 import Modal from './UserModal.vue';  // 載入 Modal 組件
+
+const selectedUser = ref(null);
 
 export const READ_USER = gql`
   query ReadUser {
@@ -250,6 +257,7 @@ export default defineComponent({
 
     // 更新用戶
     const updateUser = (userObject) => {
+      selectedUser.value = userObject;  // 更新選取的使用者
       alert(`Update User with ID ${userObject.id} (Implement modal or form)`);
       showUpdateUserModal.value = true;
     };
@@ -288,7 +296,8 @@ export default defineComponent({
       updateUser,
       showAddUserModal,
       showUpdateUserModal,
-      refetchUserList
+      refetchUserList,
+      selectedUser
     };
   },
 });

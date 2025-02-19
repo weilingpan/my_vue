@@ -82,9 +82,10 @@ export default defineComponent({
     // const isEdit = computed(() => props.selectedUser !== null);
     // 監聽 selectedUser，如果有值則填充表單
     watch(() => props.selectedUser, (user) => {
+      console.log("selectedUser changed:", user);
       if (user) {
-        username.value = user.username || '';
-        email.value = user.email || '';
+        username.value = props.selectedUser.username || '';
+        email.value = props.selectedUser.email || '';
       } else {
         username.value = '';
         email.value = '';
