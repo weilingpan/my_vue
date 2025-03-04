@@ -74,13 +74,20 @@
       </table>
     </div>
 
+    <!-- 分頁控制 -->
+    <div class="flex justify-center mt-4">
+      <button @click="prevPage" :disabled="currentPage === 1" class="px-4 py-2 mx-1 bg-black-300 rounded disabled:opacity-50">Previous</button>
+      <span class="px-4 py-2 mx-1">Page {{ currentPage }} of {{ totalPages }}</span>
+      <button @click="nextPage" :disabled="currentPage === totalPages" class="px-4 py-2 mx-1 bg-black-300 rounded disabled:opacity-50">Next</button>
+    </div>
+
     <!-- 顯示錯誤 -->
     <p v-if="error" class="text-red-500 text-lg mt-4">Error: {{ error.message }}</p>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue';
+import { defineComponent, ref, computed, watch } from 'vue';
 import { useQuery, useMutation } from '@vue/apollo-composable';
 import gql from 'graphql-tag';
 
@@ -88,9 +95,23 @@ import Modal from './UserModal.vue';  // 載入 Modal 組件
 
 const selectedUser = ref(null);
 
+// export const READ_USER = gql`
+//   query ReadUser {
+//     getUser {
+//       id
+//       username
+//       posts {
+//         id
+//       }
+//       signupTime
+//       expiredTime
+//       email
+//     }
+//   }
+// `;
 export const READ_USER = gql`
-  query ReadUser {
-    getUser {
+  query ReadUser($offset: Int, $limit: Int) {
+    getUser(offset: $offset, limit: $limit) {
       id
       username
       posts {
@@ -226,11 +247,41 @@ export default defineComponent({
     Modal
   },
   setup() {
-    const { result: data, loading, error, refetch } = useQuery<ReadUserData>(READ_USER);
+    const currentPage = ref(1);
+    const itemsPerPage = 5;
+    const offset = computed(() => (currentPage.value - 1) * itemsPerPage);
+
+    // const { result: data, loading, error, refetch } = useQuery<ReadUserData>(READ_USER);
+    const { result: data, loading, error, refetch } = useQuery<ReadUserData>(READ_USER, {
+      offset: offset.value,
+      limit: itemsPerPage
+    });
+
+    watch([currentPage, itemsPerPage], () => {
+      refetch({ offset: offset.value, limit: itemsPerPage });
+    });
+
     const deleteUserMutation = useMutation(DELETE_USER);
     const searchQuery = ref('');
     const showAddUserModal = ref(false); // 用來控制 modal 的顯示與隱藏
     const showUpdateUserModal = ref(false); // 用來控制 modal 的顯示與隱藏
+
+    const { result: data_total } = useQuery<ReadUserData>(READ_USER)
+    const totalPages = computed(() => {
+      return data_total.value ? Math.ceil(data_total.value.getUser.length / itemsPerPage) : 1;
+    });
+
+    const nextPage = () => {
+      if (currentPage.value < totalPages.value) {
+        currentPage.value++;
+      }
+    };
+
+    const prevPage = () => {
+      if (currentPage.value > 1) {
+        currentPage.value--;
+      }
+    };
 
     const refetchUserList = async () => {
       console.log('refetchUserList ...');
@@ -293,7 +344,11 @@ export default defineComponent({
       showAddUserModal,
       showUpdateUserModal,
       refetchUserList,
-      selectedUser
+      selectedUser,
+      currentPage,
+      totalPages,
+      nextPage,
+      prevPage
     };
   },
 });
