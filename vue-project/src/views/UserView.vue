@@ -35,38 +35,33 @@
       <!-- <thead class="bg-gray-200"> -->
       <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
-          <th scope="col" class="p-4">ID</th>
-          <th scope="col" class="p-4">Username</th>
-          <th scope="col" class="p-4">Posts</th>
-          <th scope="col" class="p-4">Signup Time</th>
-          <th scope="col" class="p-4">Expired Time</th>
-          <th scope="col" class="p-4">Action</th>
+          <th scope="col" class="p-4 text-center">ID</th>
+          <th scope="col" class="p-4 text-center">Username</th>
+          <th scope="col" class="p-4 text-center">Posts(#)</th>
+          <th scope="col" class="p-4 text-center">Signup Time</th>
+          <th scope="col" class="p-4 text-center">Expired Time</th>
+          <th scope="col" class="p-4 text-center">Action</th>
         </tr>
       </thead>
       <tbody>
         <!-- <tr v-for="user in data.getUsers" :key="user.id" class="hover:bg-gray-50"> -->
         <tr v-for="user in data.getUser" :key="user.id" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
           <td class="px-6 py-4">{{ user.id }}</td>
-          <td class="px-6 py-4">{{ user.username }}</td>
+          <td class="px-6 py-4 whitespace-nowrap min-w-[50px]">{{ user.username }}</td>
           <td class="px-6 py-4">{{ user.posts.length }}</td>
-          <td class="px-6 py-4">{{ formatTime(user.signupTime) }}</td>
-          <td class="px-6 py-4">{{ formatTime(user.expiredTime) }}</td>
+          <td class="px-6 py-4 whitespace-nowrap min-w-[150px]">{{ formatTime(user.signupTime) }}</td>
+          <td class="px-6 py-4 whitespace-nowrap min-w-[150px]">{{ formatTime(user.expiredTime) }}</td>
           <td class="px-6 py-4">
-            <button @click="updateUser(user)"
-                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-                    Edit
-            </button>
-            <!-- <Modal 
-              :visible="showUpdateUserModal" 
-              :selectedUser=user
-              @update:selectedUser="showUpdateUserModal = $event"
-              @userUpdated="refetchUserList" /> -->
-            <button @click="deleteUser(user.id)" 
-                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full">
-              Delete
-            </button>
-            <!-- <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">edit</button>
-            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">update</button> -->
+            <div class="flex space-x-2">
+              <button @click="updateUser(user)"
+                      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                      Edit
+              </button>
+              <button @click="deleteUser(user.id)" 
+                      class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full">
+                Delete
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>
