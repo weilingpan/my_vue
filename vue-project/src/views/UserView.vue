@@ -31,8 +31,7 @@
     </div>
 
     <!-- 數據加載完成後顯示表格 -->
-    <table v-if="!loading && data && data.getUsers" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-    <!-- <table v-if="!loading && data && data.getUsers" class="min-w-full table-auto border-collapse bg-white shadow-md rounded-lg"> -->
+    <table v-if="!loading && data && data.getUser" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
       <!-- <thead class="bg-gray-200"> -->
       <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
@@ -46,7 +45,7 @@
       </thead>
       <tbody>
         <!-- <tr v-for="user in data.getUsers" :key="user.id" class="hover:bg-gray-50"> -->
-        <tr v-for="user in data.getUsers" :key="user.id" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+        <tr v-for="user in data.getUser" :key="user.id" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
           <td class="px-6 py-4">{{ user.id }}</td>
           <td class="px-6 py-4">{{ user.username }}</td>
           <td class="px-6 py-4">{{ user.posts.length }}</td>
@@ -94,7 +93,7 @@ const selectedUser = ref(null);
 
 export const READ_USER = gql`
   query ReadUser {
-    getUsers {
+    getUser {
       id
       username
       posts {
@@ -221,7 +220,7 @@ interface User {
 }
 
 interface ReadUserData {
-  getUsers: User[];
+  getUser: User[];
 }
 
 export default defineComponent({
