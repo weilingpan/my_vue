@@ -30,6 +30,14 @@
       </div>
     </div>
 
+    <!-- 每頁顯示記錄數量選擇 -->
+    <div class="flex justify-end bg-white dark:bg-gray-900">
+      <label for="itemsPerPage" class="mr-2">Items per page:</label>
+      <select id="itemsPerPage" v-model="itemsPerPage" class="border border-gray-300 rounded-lg">
+        <option v-for="option in itemsPerPageOptions" :key="option" :value="option">{{ option }}</option>
+      </select>
+    </div>
+
     <!-- 數據加載完成後顯示表格 -->
     <div class="max-h-96 overflow-y-auto">
       <table v-if="!loading && data && data.getUser" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -248,17 +256,23 @@ export default defineComponent({
   },
   setup() {
     const currentPage = ref(1);
-    const itemsPerPage = 5;
-    const offset = computed(() => (currentPage.value - 1) * itemsPerPage);
+    const itemsPerPageOptions = [3, 5, 10];
+    const itemsPerPage = ref(itemsPerPageOptions[1]);
+    const offset = computed(() => (currentPage.value - 1) * itemsPerPage.value);
 
     // const { result: data, loading, error, refetch } = useQuery<ReadUserData>(READ_USER);
     const { result: data, loading, error, refetch } = useQuery<ReadUserData>(READ_USER, {
       offset: offset.value,
-      limit: itemsPerPage
+      limit: itemsPerPage.value
     });
 
-    watch([currentPage, itemsPerPage], () => {
-      refetch({ offset: offset.value, limit: itemsPerPage });
+    watch(itemsPerPage, () => {
+      currentPage.value = 1; // 每次選擇每頁顯示的記錄數量後跳到第一頁
+      refetch({ offset: 0, limit: itemsPerPage.value });
+    });
+
+    watch(currentPage, () => {
+      refetch({ offset: offset.value, limit: itemsPerPage.value });
     });
 
     const deleteUserMutation = useMutation(DELETE_USER);
@@ -268,7 +282,7 @@ export default defineComponent({
 
     const { result: data_total } = useQuery<ReadUserData>(READ_USER)
     const totalPages = computed(() => {
-      return data_total.value ? Math.ceil(data_total.value.getUser.length / itemsPerPage) : 1;
+      return data_total.value ? Math.ceil(data_total.value.getUser.length / itemsPerPage.value) : 1;
     });
 
     const nextPage = () => {
@@ -348,7 +362,9 @@ export default defineComponent({
       currentPage,
       totalPages,
       nextPage,
-      prevPage
+      prevPage,
+      itemsPerPageOptions,
+      itemsPerPage
     };
   },
 });
