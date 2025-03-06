@@ -262,8 +262,11 @@ export default defineComponent({
 
     // const { result: data, loading, error, refetch } = useQuery<ReadUserData>(READ_USER);
     const { result: data, loading, error, refetch } = useQuery<ReadUserData>(READ_USER, {
-      offset: offset.value,
-      limit: itemsPerPage.value
+      variables: {
+        offset: offset.value,
+        limit: itemsPerPage.value
+      },
+      fetchPolicy: 'cache-first' // 或者 'cache-and-network', 'cache-first', 'no-cache' 等
     });
 
     watch(itemsPerPage, () => {
