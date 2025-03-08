@@ -101,11 +101,9 @@ import gql from 'graphql-tag';
 
 import Modal from './UserModal.vue';  // 載入 Modal 組件
 
-const selectedUser = ref(null);
-
 // export const READ_USER = gql`
-//   query ReadUser {
-//     getUser {
+//   query ReadUser($offset: Int, $limit: Int) {
+//     getUser(offset: $offset, limit: $limit) {
 //       id
 //       username
 //       posts {
@@ -117,17 +115,23 @@ const selectedUser = ref(null);
 //     }
 //   }
 // `;
+
 export const READ_USER = gql`
-  query ReadUser($offset: Int, $limit: Int) {
-    getUser(offset: $offset, limit: $limit) {
-      id
-      username
-      posts {
+  query ReadUser($cursor: Int, $limit: Int) {
+    getUser(cursor: $cursor, limit: $limit) {
+     id
+     username
+     email
+     cursor
+     posts {
         id
-      }
-      signupTime
-      expiredTime
-      email
+        title
+        content
+        authorId
+        authorName
+     }
+     signupTime
+     expiredTime
     }
   }
 `;
@@ -140,98 +144,6 @@ export const DELETE_USER = gql`
     }
   }
 `;
-
-// [
-//     {
-//         "__typename": "UserType",
-//         "id": 1,
-//         "username": "regina",
-//         "posts": [
-//             {
-//                 "__typename": "PostType",
-//                 "id": 1
-//             }
-//         ],
-//         "signupTime": "2024-12-29T14:49:00.011000",
-//         "expiredTime": "2024-12-30T14:51:06.459192"
-//     },
-//     {
-//         "__typename": "UserType",
-//         "id": 2,
-//         "username": "amy",
-//         "posts": [],
-//         "signupTime": "2024-12-29T15:25:13.126226",
-//         "expiredTime": "2024-12-30T16:05:25.874869"
-//     },
-//     {
-//         "__typename": "UserType",
-//         "id": 3,
-//         "username": "lily",
-//         "posts": [],
-//         "signupTime": "2024-12-29T15:25:13.126226",
-//         "expiredTime": "2025-01-07T15:48:29.737410"
-//     }
-// ]
-
-// export const ALL_FRAGMENT = gql`
-//   fragment UserFields on UserType {
-//     id
-//     username
-//     signupTime
-//     expiredTime
-//   }
-
-//   fragment PostFields on PostType {
-//     id
-//     title
-//     authorId
-//   }
-// `;
-
-// export const READ_USER = gql`
-//   query ReadUser{
-//     user1: getUser(username: "regina") {
-//       ...UserFields
-//       posts {
-//         ...PostFields
-//       }
-//     }
-//     user2: getUser(username: "lily") {
-//       ...UserFields
-//       posts {
-//         ...PostFields
-//       }
-//     }
-//   }
-//   ${ALL_FRAGMENT}
-// `;
-
-// {
-//     "user1": {
-//         "__typename": "UserType",
-//         "posts": [
-//             {
-//                 "__typename": "PostType",
-//                 "id": 1,
-//                 "title": "beginner#1",
-//                 "authorId": 1
-//             }
-//         ],
-//         "id": 1,
-//         "username": "regina",
-//         "signupTime": "2024-12-29T14:49:00.011000",
-//         "expiredTime": "2024-12-30T14:51:06.459192"
-//     },
-//     "user2": {
-//         "__typename": "UserType",
-//         "posts": [],
-//         "id": 3,
-//         "username": "lily",
-//         "signupTime": "2024-12-29T15:25:13.126226",
-//         "expiredTime": "2025-01-07T15:48:29.737410"
-//     }
-// }
-
 
 interface Post {
   id: string;
@@ -255,15 +167,16 @@ export default defineComponent({
     Modal
   },
   setup() {
+    const selectedUser = ref(null);
     const currentPage = ref(1);
     const itemsPerPageOptions = [3, 5, 10];
     const itemsPerPage = ref(itemsPerPageOptions[1]);
-    const offset = computed(() => (currentPage.value - 1) * itemsPerPage.value);
+    const cursor = computed(() => (currentPage.value - 1) * itemsPerPage.value);
 
     // const { result: data, loading, error, refetch } = useQuery<ReadUserData>(READ_USER);
     const { result: data, loading, error, refetch } = useQuery<ReadUserData>(READ_USER, {
       variables: {
-        offset: offset.value,
+        cursor: cursor.value,
         limit: itemsPerPage.value
       },
       fetchPolicy: 'cache-first' // 或者 'cache-and-network', 'cache-first', 'no-cache' 等
@@ -271,11 +184,11 @@ export default defineComponent({
 
     watch(itemsPerPage, () => {
       currentPage.value = 1; // 每次選擇每頁顯示的記錄數量後跳到第一頁
-      refetch({ offset: 0, limit: itemsPerPage.value });
+      refetch({ cursor: 0, limit: itemsPerPage.value });
     });
 
     watch(currentPage, () => {
-      refetch({ offset: offset.value, limit: itemsPerPage.value });
+      refetch({ cursor: cursor.value, limit: itemsPerPage.value });
     });
 
     const deleteUserMutation = useMutation(DELETE_USER);
@@ -325,18 +238,6 @@ export default defineComponent({
       alert(`Update User with ID ${userObject.id} (Implement modal or form)`);
       showUpdateUserModal.value = true;
     };
-
-    // 檢查資料
-    // console.log(loading);
-    // console.log('loading ... ' + loading.value);
-    // console.log('error ... ' + error.value)
-    // console.log('check data');
-    // console.log(data);
-    // console.log('data ... ' + data.getUsers);
-    // if (data && data.getUsers) {
-    //   console.log('get data')
-    //   console.log(data.getUsers); // 這樣可以取出 `getUsers` 陣列
-    // }
 
     const formatTime = (time: string | null): string => {
       if (!time) return 'N/A';
