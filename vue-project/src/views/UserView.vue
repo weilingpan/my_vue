@@ -171,23 +171,30 @@ export default defineComponent({
     const currentPage = ref(1);
     const itemsPerPageOptions = [3, 5, 10];
     const itemsPerPage = ref(itemsPerPageOptions[1]);
-    const cursor = computed(() => (currentPage.value - 1) * itemsPerPage.value);
+    const cursor = ref(0);
 
-    // const { result: data, loading, error, refetch } = useQuery<ReadUserData>(READ_USER);
     const { result: data, loading, error, refetch } = useQuery<ReadUserData>(READ_USER, {
-      variables: {
-        cursor: cursor.value,
-        limit: itemsPerPage.value
-      },
+      cursor: cursor.value,
+      limit: itemsPerPage.value,
       fetchPolicy: 'cache-first' // 或者 'cache-and-network', 'cache-first', 'no-cache' 等
     });
 
     watch(itemsPerPage, () => {
-      currentPage.value = 1; // 每次選擇每頁顯示的記錄數量後跳到第一頁
+      currentPage.value = 1; // 每次選擇每頁顯示的記錄數量後跳到第一頁&cursor重新計算
       refetch({ cursor: 0, limit: itemsPerPage.value });
     });
 
-    watch(currentPage, () => {
+    watch(currentPage, (newPage, oldPage) => {
+      console.log('newPage', newPage);
+      console.log('oldPage', oldPage);
+      if (newPage > oldPage) {
+        const max_id = Math.max(...data.value?.getUser.map(user => Number(user.id)));
+        cursor.value = max_id;
+      }
+      else {
+        cursor.value = (newPage - 1) * itemsPerPage.value;
+      }
+      console.log('cursor', cursor.value);
       refetch({ cursor: cursor.value, limit: itemsPerPage.value });
     });
 
