@@ -25,6 +25,7 @@
           <input 
             type="text"
             id="table-search"
+            v-model="searchQuery"
             class="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             placeholder="Search for items">
       </div>
@@ -33,7 +34,7 @@
     <!-- 每頁顯示記錄數量選擇 -->
     <div class="flex justify-end bg-white dark:bg-gray-900">
       <label for="itemsPerPage" class="mr-2">Items per page:</label>
-      <select id="itemsPerPage" v-model="itemsPerPage" class="border border-gray-300 rounded-lg">
+      <select id="itemsPerPage" v-model="itemsPerPage" class="border border-gray-300 rounded-lg text-black">
         <option v-for="option in itemsPerPageOptions" :key="option" :value="option">{{ option }}</option>
       </select>
     </div>
@@ -54,7 +55,8 @@
         </thead>
         <tbody>
           <!-- <tr v-for="user in data.getUsers" :key="user.id" class="hover:bg-gray-50"> -->
-          <tr v-for="user in data.getUser" :key="user.id" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+          <!-- <tr v-for="user in data.getUser" :key="user.id" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"> -->
+          <tr v-for="(user, index) in paginatedUsers" :key="user.id" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
             <td class="px-6 py-4">{{ user.id }}</td>
             <td class="px-6 py-4 whitespace-nowrap min-w-[50px]">{{ user.username }}</td>
             <td class="px-6 py-4">{{ user.posts.length }}</td>
@@ -172,6 +174,7 @@ export default defineComponent({
     const itemsPerPageOptions = [3, 5, 10];
     const itemsPerPage = ref(itemsPerPageOptions[1]);
     const cursor = ref(0);
+    const searchQuery = ref('');
 
     const { result: data, loading, error, refetch } = useQuery<ReadUserData>(READ_USER, {
       cursor: cursor.value,
@@ -199,13 +202,32 @@ export default defineComponent({
     });
 
     const deleteUserMutation = useMutation(DELETE_USER);
-    const searchQuery = ref('');
     const showAddUserModal = ref(false); // 用來控制 modal 的顯示與隱藏
     const showUpdateUserModal = ref(false); // 用來控制 modal 的顯示與隱藏
 
     const { result: data_total } = useQuery<ReadUserData>(READ_USER)
+    
+    //計算過濾後的用戶，根據搜索框過濾用戶
+    const filteredUsers = computed(() => {
+      const query = searchQuery.value.toLowerCase();
+      return data_total.value?.getUser.filter(user => user.username.toLowerCase().includes(query)) || [];
+    });
+
+    const paginatedUsers = computed(() => {
+      const start = (currentPage.value - 1) * itemsPerPage.value;
+      const end = start + itemsPerPage.value;
+      return filteredUsers.value.slice(start, end);
+    });
+    
+    // TODO:
     const totalPages = computed(() => {
       return data_total.value ? Math.ceil(data_total.value.getUser.length / itemsPerPage.value) : 1;
+    });
+
+    watch(searchQuery, () => {
+      currentPage.value = 1;
+      cursor.value = 0;
+      // totalPages.value = Math.ceil(filteredUsers.value.length / itemsPerPage.value);
     });
 
     const nextPage = () => {
@@ -252,12 +274,6 @@ export default defineComponent({
       return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleString();
     };
 
-    // //計算過濾後的用戶，根據搜索框過濾用戶
-    // const filteredUsers = computed(() => {
-    //   const query = searchQuery.value.toLowerCase();
-    //   console.log('filteredUsers ... ');
-    //   // return data.value.filter(data => data.username.toLowerCase().includes(query));
-    // });
 
     return {
       data,
@@ -275,7 +291,10 @@ export default defineComponent({
       nextPage,
       prevPage,
       itemsPerPageOptions,
-      itemsPerPage
+      itemsPerPage,
+      searchQuery,
+      filteredUsers,
+      paginatedUsers
     };
   },
 });
