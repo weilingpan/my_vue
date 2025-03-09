@@ -221,13 +221,13 @@ export default defineComponent({
     
     // TODO:
     const totalPages = computed(() => {
-      return data_total.value ? Math.ceil(data_total.value.getUser.length / itemsPerPage.value) : 1;
-    });
-
-    watch(searchQuery, () => {
-      currentPage.value = 1;
-      cursor.value = 0;
-      // totalPages.value = Math.ceil(filteredUsers.value.length / itemsPerPage.value);
+      if (searchQuery.value) {
+        currentPage.value = 1;
+        cursor.value = 0;
+        return Math.ceil(filteredUsers.value.length / itemsPerPage.value);
+      } else {
+        return data_total.value ? Math.ceil(data_total.value.getUser.length / itemsPerPage.value) : 1;
+      }
     });
 
     const nextPage = () => {
