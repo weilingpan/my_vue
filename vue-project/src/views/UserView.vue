@@ -118,6 +118,7 @@ import Modal from './UserModal.vue';  // 載入 Modal 組件
 //   }
 // `;
 
+//TODO: backend getUser limit預設是10怎麼辦?
 export const READ_USER = gql`
   query ReadUser($cursor: Int, $limit: Int) {
     getUser(cursor: $cursor, limit: $limit) {

@@ -40,14 +40,24 @@ import gql from 'graphql-tag';
 import { useMutation } from '@vue/apollo-composable';
 import { defineComponent, ref, watch, computed } from 'vue';
 
+// export const CREATE_USER = gql`
+//   mutation CreateUser($username: String!, $email: String!) {
+//     createUser(username: $username, email: $email) {
+//       id
+//       username
+//       email
+//     }
+//   }
+// `;
+
 export const CREATE_USER = gql`
-  mutation CreateUser($username: String!, $email: String!) {
-    createUser(username: $username, email: $email) {
-      id
-      username
-      email
-    }
+mutation CreateUser($username: String!, $email: String!){
+  createUser(input: { username: $username, email: $email}) {
+    id
+    username
+    email
   }
+}
 `;
 
 export const UPDATE_USER = gql`
