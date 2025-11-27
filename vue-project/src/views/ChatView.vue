@@ -17,7 +17,17 @@
         <div v-if="msg.role === 'ai'" class="flex w-full">
             <div class="max-w-[80%] bg-gray-100 text-gray-900 p-3 rounded-lg rounded-tl-none shadow-sm dark:bg-gray-700 dark:text-white">
                 <div class="text-sm whitespace-pre-wrap">{{ msg.text }}</div>
-                <div class="text-xs text-gray-400 mt-1">{{ msg.date}} {{ formatTime(msg.time) }}</div>
+                <div class="text-xs text-gray-400 mt-1">
+                    {{ msg.date}} {{ formatTime(msg.time) }}
+                    <!-- Copy Button -->
+                    <button
+                        class="bg-gray-500 hover:bg-green-600 px-1 text-white rounded-lg disabled:opacity-50"
+                        @click="copyToClipboard(msg.text)"
+                        title="複製訊息"
+                    >
+                        copy
+                    </button>
+                </div>
             </div>
         </div>
         <!-- User message (right) -->
@@ -86,6 +96,15 @@ function resubmitLast() {
     if (lastUserMessage.value) {
         message.value = lastUserMessage.value
         sendMessage()
+    }
+}
+
+async function copyToClipboard(text: string) {
+    try {
+        await navigator.clipboard.writeText(text);
+        console.log("內容已複製");
+    } catch(err) {
+        console.error("複製失敗", err);
     }
 }
 
