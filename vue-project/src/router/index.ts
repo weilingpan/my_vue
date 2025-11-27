@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import UserView from '../views/UserView.vue'
 import AIView from '../views/AIApplication.vue'
 import UploadView from '../views/UploadView.vue'
+import ChatView from '../views/ChatView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,6 +35,11 @@ const router = createRouter({
       path: '/upload',
       name: 'Upload',
       component: UploadView
+    },
+    {
+      path: '/chat',
+      name: 'chat',
+      component: ChatView
     },
   ]
 })
