@@ -1,31 +1,33 @@
 <template>
-<!-- 清除按鈕 -->
+<!-- Cleat historial messages -->
 <div class="mb-2 flex justify-end">
     <button
         @click="clearMessages"
         class="px-3 py-1 bg-gray-500 text-white rounded hover:bg-red-600"
-    > clear chat
+        title="清除歷史訊息"    
+    > clear
     </button>
 </div>
-    <div class="p-4 h-[calc(100vh-4rem)] flex flex-col">
-        <!-- Messages list -->
-        <div ref="scrollRef" class="mb-4 overflow-y-auto space-y-4 flex-1">
-        <div v-for="msg in messages" :key="msg.id" class="flex">
-            <!-- AI message (left) -->
-            <div v-if="msg.role === 'ai'" class="flex w-full">
-                <div class="max-w-[80%] bg-gray-100 text-gray-900 p-3 rounded-lg rounded-tl-none shadow-sm dark:bg-gray-700 dark:text-white">
-                    <div class="text-sm whitespace-pre-wrap">{{ msg.text }}</div>
-                    <div class="text-xs text-gray-400 mt-1">{{ formatTime(msg.time) }}</div>
-                </div>
-            </div>
-            <!-- User message (right) -->
-            <div v-else class="flex w-full justify-end">
-                <div class="max-w-[80%] bg-indigo-600 text-white p-3 rounded-lg rounded-tr-none shadow-sm">
-                    <div class="text-sm whitespace-pre-wrap">{{ msg.text }}</div>
-                    <div class="text-xs text-indigo-100 mt-1 text-right">{{ formatTime(msg.time) }}</div>
-                </div>
+
+<div class="p-4 h-[calc(100vh-4rem)] flex flex-col">
+    <!-- Messages list -->
+    <div ref="scrollRef" class="mb-4 overflow-y-auto space-y-4 flex-1">
+    <div v-for="msg in messages" :key="msg.id" class="flex">
+        <!-- AI message (left) -->
+        <div v-if="msg.role === 'ai'" class="flex w-full">
+            <div class="max-w-[80%] bg-gray-100 text-gray-900 p-3 rounded-lg rounded-tl-none shadow-sm dark:bg-gray-700 dark:text-white">
+                <div class="text-sm whitespace-pre-wrap">{{ msg.text }}</div>
+                <div class="text-xs text-gray-400 mt-1">{{ formatTime(msg.time) }}</div>
             </div>
         </div>
+        <!-- User message (right) -->
+        <div v-else class="flex w-full justify-end">
+            <div class="max-w-[80%] bg-indigo-600 text-white p-3 rounded-lg rounded-tr-none shadow-sm">
+                <div class="text-sm whitespace-pre-wrap">{{ msg.text }}</div>
+                <div class="text-xs text-indigo-100 mt-1 text-right">{{ formatTime(msg.time) }}</div>
+            </div>
+        </div>
+    </div>
     </div>
 
     <!-- Input form (stays at bottom) -->
@@ -41,8 +43,21 @@
             type="submit"
             :disabled="!message.trim()"
             class="ml-3 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+            title="送出訊息"
         >
             Send
+        </button>
+        <button
+            type="button"
+            @click="resubmitLast"
+            class="ml-2 px-1 py-2 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
+            :disabled="!lastUserMessage"
+            title="重新送出上一則訊息"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582M20 20v-5h-.581m-1.837-7.163A7.001 7.001 0 006.582 9H4m16 6a7.001 7.001 0 01-11.582 4.163M20 15.001V15" />
+            </svg>
         </button>
     </form>
 </div>
@@ -50,7 +65,7 @@
 
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, computed } from 'vue'
 
 type Msg = { id: number; role: 'ai' | 'user'; text: string; time: number }
 
@@ -58,8 +73,20 @@ const message = ref('')
 const messages = ref<Msg[]>([])
 const scrollRef = ref<HTMLElement | null>(null)
 
+const lastUserMessage = computed(() => {
+    const arr = messages.value.filter(m => m.role === 'user')
+    return arr.length ? arr[arr.length - 1].text : ''
+})
+
 function clearMessages() {
     messages.value = []
+}
+
+function resubmitLast() {
+    if (lastUserMessage.value) {
+        message.value = lastUserMessage.value
+        sendMessage()
+    }
 }
 
 function formatTime(ts: number) {
