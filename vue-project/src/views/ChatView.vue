@@ -17,14 +17,14 @@
         <div v-if="msg.role === 'ai'" class="flex w-full">
             <div class="max-w-[80%] bg-gray-100 text-gray-900 p-3 rounded-lg rounded-tl-none shadow-sm dark:bg-gray-700 dark:text-white">
                 <div class="text-sm whitespace-pre-wrap">{{ msg.text }}</div>
-                <div class="text-xs text-gray-400 mt-1">{{ formatTime(msg.time) }}</div>
+                <div class="text-xs text-gray-400 mt-1">{{ msg.date}} {{ formatTime(msg.time) }}</div>
             </div>
         </div>
         <!-- User message (right) -->
         <div v-else class="flex w-full justify-end">
             <div class="max-w-[80%] bg-indigo-600 text-white p-3 rounded-lg rounded-tr-none shadow-sm">
                 <div class="text-sm whitespace-pre-wrap">{{ msg.text }}</div>
-                <div class="text-xs text-indigo-100 mt-1 text-right">{{ formatTime(msg.time) }}</div>
+                <div class="text-xs text-indigo-100 mt-1 text-right">{{ msg.date}} {{ formatTime(msg.time) }}</div>
             </div>
         </div>
     </div>
@@ -67,7 +67,7 @@
 <script setup lang="ts">
 import { ref, nextTick, computed } from 'vue'
 
-type Msg = { id: number; role: 'ai' | 'user'; text: string; time: number }
+type Msg = { id: number; role: 'ai' | 'user'; text: string; date: string, time: number }
 
 const message = ref('')
 const messages = ref<Msg[]>([])
@@ -103,8 +103,25 @@ function scrollToBottom() {
 	})
 }
 
+function generateDate() {
+    const now = new Date()
+    const pad = (n: number, len = 2) => n.toString().padStart(len, '0')
+    const dateStr = [
+        now.getFullYear(),
+        '-',
+        pad(now.getMonth() + 1),
+        '-',
+        pad(now.getDate())
+    ].join('')
+    return dateStr
+}
+
 function pushMessage(role: 'ai' | 'user', text: string) {
-	messages.value.push({ id: Date.now() + Math.floor(Math.random() * 1000), role, text, time: Date.now() })
+	messages.value.push({ 
+        id: Date.now() + Math.floor(Math.random() * 1000), 
+        role, text, 
+        date: generateDate(),
+        time: Date.now() })
 	scrollToBottom()
 }
 
@@ -123,12 +140,27 @@ async function sendMessage() {
 
     // call backend API
     try {
-        const response = await fetch('http://localhost:8000/runs/stream', {
+        // const is_chunk = false
+        // const response = await fetch('http://localhost:8000/runs/stream', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     },
+        //     body: JSON.stringify({ human_message: text }),
+        // })
+        const is_chunk = true
+        const response = await fetch('http://localhost:8000/runs/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ human_message: text }),
+            body: JSON.stringify(
+                { 
+                    human_message: text,
+                    model: 'gpt-4.1-nano',
+                    stream: true
+                }
+            ),
         })
         if (!response.ok) {
             throw new Error('Error from API')
@@ -162,10 +194,15 @@ async function sendMessage() {
                             // console.log('aiText before:', aiText)
                             // console.log('obj.data:', obj.data)
                             // console.log('lastLength:', lastLength)
-                            const diff = obj.data.slice(lastLength)
-                            aiText += diff
-                            lastLength = aiText.length
-                            // console.log('diff:', diff)
+                            
+                            // // slice 出差異部分
+                            // const diff = obj.data.slice(lastLength)
+                            // aiText += diff
+                            // lastLength = aiText.length
+                            // // console.log('diff:', diff)
+
+                            // 直接 append chunk
+                            aiText += obj.data
                             aiMsg.text = aiText
                             scrollToBottom()
                         }
