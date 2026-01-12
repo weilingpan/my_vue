@@ -42,9 +42,9 @@
     <!-- Loading Message -->
     <div v-if="isLoading" class="flex w-full">
         <div class="max-w-[80%] bg-gray-100 text-gray-900 p-3 rounded-lg rounded-tl-none shadow-sm dark:bg-gray-700 dark:text-white flex items-center space-x-1">
-             <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-             <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-             <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+             <div class="w-1 h-1 bg-gray-400 rounded-full animate-bounce"></div>
+             <div class="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+             <div class="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
         </div>
     </div>
     </div>
