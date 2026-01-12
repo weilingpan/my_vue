@@ -38,6 +38,15 @@
             </div>
         </div>
     </div>
+    
+    <!-- Loading Message -->
+    <div v-if="isLoading" class="flex w-full">
+        <div class="max-w-[80%] bg-gray-100 text-gray-900 p-3 rounded-lg rounded-tl-none shadow-sm dark:bg-gray-700 dark:text-white flex items-center space-x-1">
+             <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+             <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+             <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+        </div>
+    </div>
     </div>
 
     <!-- Input form (stays at bottom) -->
@@ -48,10 +57,11 @@
             placeholder="Type a message..."
             aria-label="Message"
             class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            :disabled="isLoading" 
         />
         <button
             type="submit"
-            :disabled="!message.trim()"
+            :disabled="!message.trim() || isLoading"
             class="ml-3 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
             title="送出訊息"
         >
@@ -61,7 +71,7 @@
             type="button"
             @click="resubmitLast"
             class="ml-2 px-1 py-2 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
-            :disabled="!lastUserMessage"
+            :disabled="!lastUserMessage || isLoading"
             title="重新送出上一則訊息"
         >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -82,6 +92,7 @@ type Msg = { id: number; role: 'ai' | 'user'; text: string; date: string, time: 
 const message = ref('')
 const messages = ref<Msg[]>([])
 const scrollRef = ref<HTMLElement | null>(null)
+const isLoading = ref(false)
 
 const lastUserMessage = computed(() => {
     const arr = messages.value.filter(m => m.role === 'user')
@@ -150,6 +161,8 @@ async function sendMessage() {
 	// push user message
 	pushMessage('user', text)
 	message.value = ''
+    isLoading.value = true
+    scrollToBottom()
 
 	// // simulate AI reply (mock)
 	// setTimeout(() => {
@@ -181,9 +194,14 @@ async function sendMessage() {
                 }
             ),
         })
+        
         if (!response.ok) {
             throw new Error('Error from API')
         }
+        
+        // Stop loading before showing response
+        isLoading.value = false
+        
         // console.log('response status:', response.ok)
 
         let aiText = ''
@@ -232,6 +250,7 @@ async function sendMessage() {
             }
         }
     } catch (err) {
+        isLoading.value = false
         pushMessage('ai', 'API 串流回覆失敗')
     }
 
